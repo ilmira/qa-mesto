@@ -1,0 +1,33 @@
+name: Python autotests
+
+on: [push]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    name: Run autotests
+    steps:
+      - name: Checkout autotests
+        uses: actions/checkout@v6
+      - name: Run all tests
+        run: docker compose up
+        continue-on-error: true
+      - name: Install java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'microsoft' 
+          java-version: '25'
+      - name: Install Allure
+        run: |
+          sudo wget https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.tgz
+          sudo tar -zxvf allure-2.32.0.tgz
+          sudo ln -sf $(pwd)/allure-2.32.0/bin/allure /usr/bin/allure
+      - name: Generate report
+        run: allure generate -c allure-results -o allure-report
+      - name: Save allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 1
+      
