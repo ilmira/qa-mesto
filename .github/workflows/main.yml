@@ -54,8 +54,6 @@ jobs:
   testing:
     needs: setup_matrix
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright/python:v1.54.0-jammy
     strategy:
       fail-fast: false # Если упадет Firefox, Chromium всё равно продолжит работу
       matrix:
@@ -63,12 +61,7 @@ jobs:
     steps:
       - name: 📥 Чекаут кода
         uses: actions/checkout@v4
-      - name: 🔧 Подготовка окружения
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          playwright install --with-deps
-      - name: 🧪 Сбор списка и запуск тестов
+      - name: 🧪 Сбор списка и запуск тестов в Docker
         run: |
           TEST_TARGETS="${{ github.event.inputs.TEST_FILES }}"
           if [ -z "$TEST_TARGETS" ]; then
@@ -76,17 +69,16 @@ jobs:
           else
             TEST_TARGETS=$(echo $TEST_TARGETS | tr ',' ' ')
           fi
-          if [[ "${{ github.event.inputs.TEST_TYPE }}" == "all" ]]; then
-            MARKER_CMD=""
-          else
-            MARKER_CMD="-m ${{ github.event.inputs.TEST_TYPE }}"
-          fi
+          export TEST_FILES="$TEST_TARGETS"
           echo "Запуск тестов в ${{ matrix.browser }}..."
-          pytest $TEST_TARGETS $MARKER_CMD \
-            --env=${{ github.event.inputs.TARGET_ENV }} \
-            --alluredir=./allure-results \
-            -v || echo "⚠️ Тесты завершены (возможно есть упавшие)"
+          docker compose up --build --abort-on-container-exit --exit-code-from qa-mesto \
+           || echo "⚠️ Тесты завершены (возможно есть упавшие)"
+        env:
+          BROWSER: ${{ matrix.browser }}
+          TARGET_ENV: ${{ github.event.inputs.TARGET_ENV }}
+          TEST_TYPE: ${{ github.event.inputs.TEST_TYPE }}
       - name: 📦 Сохранение результатов
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.browser }}
