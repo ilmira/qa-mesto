@@ -1,33 +1,35 @@
-name: Python autotests
-
-on: [push]
+name: UI Tests Pipeline
+on:
+  workflow_dispatch:
+    inputs:
+      TARGET_ENV:
+        description: 'Выберите окружение для тестов'
+        required: true
+        default: 'dev'
+        type: choice
+        options: ['dev', 'stage']
+      TEST_TYPE:
+        description: 'Выберите тип тестов (по маркерам)'
+        required: true
+        default: 'all'
+        type: choice
+        options: ['smoke', 'regression', 'all']
+      TEST_FILES:
+        description: 'Список тестов через запятую (оставьте пустым для всех)'
+        required: false
+        type: string
+      BROWSER_LIST:
+        description: 'Браузеры для прогона'
+        required: true
+        default: 'chromium'
+        type: choice
+        options: ['chromium', 'firefox', 'webkit', 'all']
+env:
+  # Отключаем надоедливые системные предупреждения GitHub о переходе на Node.js 24
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
     name: Run autotests
-    steps:
-      - name: Checkout autotests
-        uses: actions/checkout@v6
-      - name: Run all tests
-        run: docker compose up
-        continue-on-error: true
-      - name: Install java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'microsoft' 
-          java-version: '25'
-      - name: Install Allure
-        run: |
-          sudo wget https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.tgz
-          sudo tar -zxvf allure-2.32.0.tgz
-          sudo ln -sf $(pwd)/allure-2.32.0/bin/allure /usr/bin/allure
-      - name: Generate report
-        run: allure generate -c allure-results -o allure-report
-      - name: Save allure report
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
-          retention-days: 1
-      
+    
