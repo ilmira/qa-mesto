@@ -1,6 +1,8 @@
 services:
   qa-mesto:
     build: .
-    command: pytest -v --alluredir=/app/allure-results
     volumes:
       - ./allure-results:/app/allure-results
+    environment:
+      - HEADLESS=true
+      - ENV=dev

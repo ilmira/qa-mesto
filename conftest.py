@@ -2,7 +2,7 @@ import pytest
 import allure
 from playwright.sync_api import Page
 from config.application import Application
-from config.environments import *
+from config.environments import Environment, common_users, print_environment_info, environments, UserCredentials
 
 # ============================================================
 #
