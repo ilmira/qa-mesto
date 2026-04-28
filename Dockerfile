@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY . .
 
-CMD ["pytest", "-v", "--alluredir=/app/allure-results"]
+CMD ["pytest"]
