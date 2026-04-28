@@ -76,8 +76,13 @@ jobs:
           else
             TEST_TARGETS=$(echo $TEST_TARGETS | tr ',' ' ')
           fi
+          if [[ "${{ github.event.inputs.TEST_TYPE }}" == "all" ]]; then
+            MARKER_CMD=""
+          else
+            MARKER_CMD="-m ${{ github.event.inputs.TEST_TYPE }}"
+          fi
           echo "Запуск тестов в ${{ matrix.browser }}..."
-          pytest $TEST_TARGETS -m "${{ github.event.inputs.TEST_TYPE }}" \
+          pytest $TEST_TARGETS $MARKER_CMD \
             --env=${{ github.event.inputs.TARGET_ENV }} \
             --alluredir=./allure-results \
             -v || echo "⚠️ Тесты завершены (возможно есть упавшие)"
