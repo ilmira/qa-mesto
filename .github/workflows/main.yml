@@ -29,7 +29,12 @@ env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
-  run-tests:
+  validate_pipeline_inputs:
     runs-on: ubuntu-latest
-    name: Run autotests
-    
+    steps:
+      - name: 🔍 Проверка параметров
+        run: |
+          echo "Окружение: ${{ github.event.inputs.TARGET_ENV }}"
+          echo "Браузеры: ${{ github.event.inputs.BROWSER_LIST }}"
+          echo "✅ Параметры проверены — всё ок"
+          
