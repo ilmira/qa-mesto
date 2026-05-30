@@ -91,7 +91,7 @@ jobs:
           cat > ".env.$ENV_NAME" << EOF
           URL=${URL}
           DEFAULT_USER=${DEFAULT_USER}
-          USERS='${USERS}'
+          USERS=${USERS}
           EOF
       - name: 🧪 Сбор списка и запуск тестов в Docker
         run: |
