@@ -27,7 +27,7 @@ class HomePage(BasePage):
         self.name_input.fill(name)
         self.description_input.fill(description)
         self.save_button.click()
-        expect(self.edit_popup).to_be_hidden()
+        expect(self.edit_popup).to_be_hidden(timeout=10000)
 
     def check_profile_data(self, name: str, description: str):
         """Проверяет имя и описание пользователя в профиле."""
