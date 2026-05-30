@@ -3,6 +3,8 @@ services:
     build: .
     volumes:
       - ./allure-results:/app/allure-results
+    env_file:
+      - .env.${ENV:-dev}
     environment:
       - HEADLESS=true
       - ENV=${TARGET_ENV:-dev}
