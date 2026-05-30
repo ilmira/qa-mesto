@@ -1,6 +1,33 @@
 name: UI Tests Pipeline
 on:
-  push
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      TARGET_ENV:
+        description: 'Окружение'
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stage
+      BROWSER_LIST:
+        description: 'Браузер(ы)'
+        default: 'chromium'
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - webkit
+          - all
+      TEST_TYPE:
+        description: 'Тип тестов (маркер)'
+        default: ''
+        type: string
+      TEST_FILES:
+        description: 'Файлы/папки с тестами (через запятую)'
+        default: 'tests/'
+        type: string
 env:
   # Отключаем надоедливые системные предупреждения GitHub о переходе на Node.js 24
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
@@ -23,10 +50,14 @@ jobs:
       - name: ⚙️ Настройка матрицы браузеров
         id: set-matrix
         run: |
-          if [[ "${{ github.event.inputs.BROWSER_LIST }}" == "all" ]]; then
+          BROWSER_LIST="${{ github.event.inputs.BROWSER_LIST }}"
+          if [ -z "$BROWSER_LIST" ]; then
+            BROWSER_LIST="chromium"
+          fi
+          if [[ "$BROWSER_LIST" == "all" ]]; then
             echo 'matrix=["chromium", "firefox", "webkit"]' >> $GITHUB_OUTPUT
           else
-            echo "matrix=[\"${{ github.event.inputs.BROWSER_LIST }}\"]" >> $GITHUB_OUTPUT
+            echo "matrix=[\"$BROWSER_LIST\"]" >> $GITHUB_OUTPUT
           fi
   testing:
     needs: setup_matrix
@@ -41,6 +72,10 @@ jobs:
       - name: 🔐 Создание .env из секретов
         run: |
           ENV_NAME="${{ github.event.inputs.TARGET_ENV }}"
+          # Если не задано (например, при push), используем dev
+          if [ -z "$ENV_NAME" ]; then
+            ENV_NAME="dev"
+          fi
           if [ "$ENV_NAME" = "dev" ]; then
             URL="${{ secrets.DEV_URL }}"
             DEFAULT_USER="${{ secrets.DEV_DEFAULT_USER }}"
