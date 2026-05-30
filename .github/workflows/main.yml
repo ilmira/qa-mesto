@@ -78,11 +78,12 @@ jobs:
           if [ "$ENV_NAME" = "dev" ]; then
             URL="${{ secrets.DEV_URL }}"
             DEFAULT_USER="${{ secrets.DEV_DEFAULT_USER }}"
-            USERS="${{ secrets.DEV_USERS }}"
+            # Сохраняем JSON с помощью toJSON(fromJSON(...))
+            USERS='${{ toJSON(fromJSON(secrets.DEV_USERS)) }}'
           elif [ "$ENV_NAME" = "stage" ]; then
             URL="${{ secrets.STAGE_URL }}"
             DEFAULT_USER="${{ secrets.STAGE_DEFAULT_USER }}"
-            USERS="${{ secrets.STAGE_USERS }}"
+            USERS='${{ toJSON(fromJSON(secrets.STAGE_USERS)) }}'
           else
             echo "❌ Неизвестное окружение: $ENV_NAME"
             exit 1
