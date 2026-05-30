@@ -72,29 +72,34 @@ jobs:
       - name: 🔐 Подготовка переменных окружения
         id: prepare-env
         run: |
-            ENV_NAME="${{ github.event.inputs.TARGET_ENV }}"
-            [ -z "$ENV_NAME" ] && ENV_NAME="dev"
-            echo "ENV_NAME=$ENV_NAME" >> $GITHUB_ENV
-            echo "ENV_NAME=$ENV_NAME" >> $GITHUB_OUTPUT
+          ENV_NAME="${{ github.event.inputs.TARGET_ENV }}"
+          [ -z "$ENV_NAME" ] && ENV_NAME="dev"
+          echo "ENV_NAME=$ENV_NAME" >> $GITHUB_ENV
+          echo "ENV_NAME=$ENV_NAME" >> $GITHUB_OUTPUT
             
-            if [ "$ENV_NAME" = "dev" ]; then
-              echo "URL=${{ secrets.DEV_URL }}" >> $GITHUB_ENV
-              echo "DEFAULT_USER=${{ secrets.DEV_DEFAULT_USER }}" >> $GITHUB_ENV
-              echo "USERS=${{ secrets.DEV_USERS }}" >> $GITHUB_ENV
-            else
-              echo "URL=${{ secrets.STAGE_URL }}" >> $GITHUB_ENV
-              echo "DEFAULT_USER=${{ secrets.STAGE_DEFAULT_USER }}" >> $GITHUB_ENV
-              echo "USERS=${{ secrets.STAGE_USERS }}" >> $GITHUB_ENV
-            fi
+          if [ "$ENV_NAME" = "dev" ]; then
+          echo "URL=${{ secrets.DEV_URL }}" >> $GITHUB_ENV
+          echo "DEFAULT_USER=${{ secrets.DEV_DEFAULT_USER }}" >> $GITHUB_ENV
+          USERS_PRETTY='${{ toJSON(fromJSON(secrets.DEV_USERS)) }}'
+          USERS_COMPACT=$(python -c "import json, sys; print(json.dumps(json.loads(sys.stdin.read()), separators=(',', ':')))" <<< "$USERS_PRETTY")
+          echo "USERS=$USERS_COMPACT" >> $GITHUB_ENV
+          else
+          echo "URL=${{ secrets.STAGE_URL }}" >> $GITHUB_ENV
+          echo "DEFAULT_USER=${{ secrets.STAGE_DEFAULT_USER }}" >> $GITHUB_ENV
+          USERS_PRETTY='${{ toJSON(fromJSON(secrets.STAGE_USERS)) }}'
+          USERS_COMPACT=$(python -c "import json, sys; print(json.dumps(json.loads(sys.stdin.read()), separators=(',', ':')))" <<< "$USERS_PRETTY")
+          echo "USERS=$USERS_COMPACT" >> $GITHUB_ENV
+          fi
+
       - name: 🔐 Генерация .env файла
         run: |
-            cat << 'EOF' > ".env.${{ env.ENV_NAME }}"
-            URL=${URL}
-            DEFAULT_USER=${DEFAULT_USER}
-            USERS=${USERS}
-            EOF
-            envsubst < ".env.${{ env.ENV_NAME }}" > ".env.${{ env.ENV_NAME }}.tmp"
-            mv ".env.${{ env.ENV_NAME }}.tmp" ".env.${{ env.ENV_NAME }}"
+          cat << 'EOF' > ".env.${{ env.ENV_NAME }}"
+          URL=${URL}
+          DEFAULT_USER=${DEFAULT_USER}
+          USERS=${USERS}
+          EOF
+          envsubst < ".env.${{ env.ENV_NAME }}" > ".env.${{ env.ENV_NAME }}.tmp"
+          mv ".env.${{ env.ENV_NAME }}.tmp" ".env.${{ env.ENV_NAME }}"
       - name: 🐞 Отладка .env файла
         run: |
           echo "=== Содержимое .env.${{ github.event.inputs.TARGET_ENV || 'dev' }} ==="
