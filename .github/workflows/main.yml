@@ -100,14 +100,6 @@ jobs:
           EOF
           envsubst < ".env.${{ env.ENV_NAME }}" > ".env.${{ env.ENV_NAME }}.tmp"
           mv ".env.${{ env.ENV_NAME }}.tmp" ".env.${{ env.ENV_NAME }}"
-      - name: 🐞 Отладка .env файла
-        run: |
-          echo "=== Содержимое .env.${{ github.event.inputs.TARGET_ENV || 'dev' }} ==="
-          cat ".env.${{ github.event.inputs.TARGET_ENV || 'dev' }}"
-          echo "=== Первые 50 символов USERS ==="
-          grep '^USERS=' ".env.${{ github.event.inputs.TARGET_ENV || 'dev' }}" | cut -c 1-50
-          echo "=== Шестнадцатеричный дамп первых 20 байт ==="
-          grep '^USERS=' ".env.${{ github.event.inputs.TARGET_ENV || 'dev' }}" | head -c 20 | xxd
       - name: 🧪 Сбор списка и запуск тестов в Docker
         run: |
           TEST_TARGETS="${{ github.event.inputs.TEST_FILES }}"
