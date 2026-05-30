@@ -9,6 +9,6 @@ class BasePage:
         """Открывает страницу по указанному пути."""
         self.page.goto(path)
 
-    def check_url_contains(self, path: str):
+    def check_url(self, path: str):
         """Проверяет, что текущий URL содержит указанный путь."""
         expect(self.page).to_have_url(path)

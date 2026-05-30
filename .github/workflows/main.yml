@@ -1,29 +1,6 @@
 name: UI Tests Pipeline
 on:
-  workflow_dispatch:
-    inputs:
-      TARGET_ENV:
-        description: 'Выберите окружение для тестов'
-        required: true
-        default: 'dev'
-        type: choice
-        options: ['dev', 'stage']
-      TEST_TYPE:
-        description: 'Выберите тип тестов (по маркерам)'
-        required: true
-        default: 'all'
-        type: choice
-        options: ['smoke', 'regression', 'all']
-      TEST_FILES:
-        description: 'Список тестов через запятую (оставьте пустым для всех)'
-        required: false
-        type: string
-      BROWSER_LIST:
-        description: 'Браузеры для прогона'
-        required: true
-        default: 'chromium'
-        type: choice
-        options: ['chromium', 'firefox', 'webkit', 'all']
+  push
 env:
   # Отключаем надоедливые системные предупреждения GitHub о переходе на Node.js 24
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
@@ -61,6 +38,26 @@ jobs:
     steps:
       - name: 📥 Чекаут кода
         uses: actions/checkout@v4
+      - name: 🔐 Создание .env из секретов
+        run: |
+          ENV_NAME="${{ github.event.inputs.TARGET_ENV }}"
+          if [ "$ENV_NAME" = "dev" ]; then
+            URL="${{ secrets.DEV_URL }}"
+            DEFAULT_USER="${{ secrets.DEV_DEFAULT_USER }}"
+            USERS="${{ secrets.DEV_USERS }}"
+          elif [ "$ENV_NAME" = "stage" ]; then
+            URL="${{ secrets.STAGE_URL }}"
+            DEFAULT_USER="${{ secrets.STAGE_DEFAULT_USER }}"
+            USERS="${{ secrets.STAGE_USERS }}"
+          else
+            echo "❌ Неизвестное окружение: $ENV_NAME"
+            exit 1
+          fi
+          cat > ".env.$ENV_NAME" << EOF
+          URL=${URL}
+          DEFAULT_USER=${DEFAULT_USER}
+          USERS='${USERS}'
+          EOF
       - name: 🧪 Сбор списка и запуск тестов в Docker
         run: |
           TEST_TARGETS="${{ github.event.inputs.TEST_FILES }}"

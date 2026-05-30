@@ -3,3 +3,5 @@ allure-results
 .idea
 __pycache__/
 *.pyc
+.env*
+!.env.example

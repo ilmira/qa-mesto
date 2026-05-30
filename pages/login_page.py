@@ -15,7 +15,7 @@ class LoginPage(BasePage):
     def open(self):
         """Открывает страницу входа, используя путь, определенный в классе."""
         super().open(self.PAGE_PATH)
-        self.check_url_contains(self.PAGE_PATH)
+        self.check_url(self.PAGE_PATH)
 
     def login(self, email: str, password: str):
         """Выполняет полный процесс входа."""

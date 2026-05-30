@@ -2,7 +2,7 @@ import pytest
 import allure
 from playwright.sync_api import Page
 from config.application import Application
-from config.environments import Environment, common_users, print_environment_info, environments, UserCredentials
+from config.environments import Environment, print_environment_info, load_config, UserCredentials
 
 # ============================================================
 #
@@ -14,7 +14,7 @@ def pytest_addoption(parser):
     """Добавляем опции для выбора окружения и типа пользователя."""
     parser.addoption("--env", default="dev", choices=[e.value for e in Environment],
                      help="Выберите окружение: dev или stage")
-    parser.addoption("--user-type", default=None, choices=common_users.keys(),
+    parser.addoption("--user-type", default=None, choices=["user", "admin"],
                      help="Выберите тип пользователя: user или admin")
 
 def pytest_configure(config):
@@ -77,7 +77,7 @@ def app(page: Page) -> Application:
 def env_config(request):
     """Предоставляет конфигурацию окружения (URL и т.д.)."""
     env_name = request.config.getoption("--env")
-    return environments[Environment(env_name)]
+    return load_config(Environment(env_name))
 
 @pytest.fixture(scope="function")
 def user(request, env_config) -> UserCredentials:
@@ -85,7 +85,7 @@ def user(request, env_config) -> UserCredentials:
     user_type = request.config.getoption("--user-type") or env_config.default_user
     if not user_type:
         pytest.fail("Тип пользователя не указан ни через --user-type, ни в конфиге окружения.")
-    return common_users[user_type]
+    return env_config.get_user_credentials(user_type)
 
 # ============================================================
 #

@@ -11,7 +11,7 @@ class TestLogin:
     @allure.title("Успешная авторизация пользователя")
     def test_user_successful_login(self, app: Application, authorized_user, env_config):
         with allure.step("Проверить, что URL после входа соответствует главной странице"):
-            app.home_page.check_url_contains(env_config.url + '/')
+            app.home_page.check_url(env_config.url + '/')
 
     @pytest.mark.regression
     @allure.title("Авторизация с неверным паролем")

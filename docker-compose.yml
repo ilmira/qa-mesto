@@ -5,13 +5,9 @@ services:
       - ./allure-results:/app/allure-results
     environment:
       - HEADLESS=true
-      - ENV=${TARGET_ENV}
-      - BROWSER=${BROWSER}
-      - TEST_TYPE=${TEST_TYPE}
-      - TEST_FILES=${TEST_FILES}
+      - ENV=${TARGET_ENV:-dev}
+      - BROWSER=${BROWSER:-chromium}
+      - TEST_TYPE=${TEST_TYPE:-}
+      - TEST_FILES=${TEST_FILES:-}
     command: >
-      sh -c "if [ \"$TEST_TYPE\" = \"all\" ]; then
-               pytest -v $TEST_FILES --alluredir=/app/allure-results;
-             else
-               pytest -v -m \"$TEST_TYPE\" $TEST_FILES --alluredir=/app/allure-results;
-             fi"
+      sh -c "pytest -v $TEST_FILES --env=${ENV:-dev} --browser=${BROWSER:-chromium} --alluredir=/app/allure-results ${TEST_TYPE:+-m \"$TEST_TYPE\"}"
